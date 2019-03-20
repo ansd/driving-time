@@ -3,9 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"text/tabwriter"
 
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 	"googlemaps.github.io/maps"
 )
@@ -52,13 +54,27 @@ func requestDurations(origin string, destinations []string) (*maps.DistanceMatri
 func printDurations(rsp *maps.DistanceMatrixResponse) error {
 	fmt.Println()
 	fmt.Printf("Origin:\n%s\n", rsp.OriginAddresses[0])
+	fmt.Println()
 
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', tabwriter.TabIndent)
-	fmt.Fprintln(w)
-	fmt.Fprintf(w, "Destination\tStatus\tDuration\tDurationInTraffic\tDistance\n")
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.TabIndent)
+	fmt.Fprintf(w, "Destination\tDistance\tStatus\tLive Duration\n")
 	for i, dst := range rsp.DestinationAddresses {
-		elem := rsp.Rows[0].Elements[i]
-		fmt.Fprintf(w, "%v\t%v\t%v\t%v\t%v\n", dst, elem.Status, elem.Duration, elem.DurationInTraffic, elem.Distance.HumanReadable)
+		e := rsp.Rows[0].Elements[i]
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", dst, e.Distance.HumanReadable, e.Status, formatLiveDuration(e))
 	}
 	return w.Flush()
+}
+
+func formatLiveDuration(e *maps.DistanceMatrixElement) string {
+	minutesDueTraffic := e.DurationInTraffic.Minutes() - e.Duration.Minutes()
+	if minutesDueTraffic < 0 {
+		return fmt.Sprintf("%v\t(%.0fm faster than usual)", aurora.Green(e.DurationInTraffic), math.Abs(minutesDueTraffic))
+	}
+	if minutesDueTraffic == 0 {
+		return fmt.Sprintf("%v\t(the usual traffic)", aurora.Green(e.DurationInTraffic))
+	}
+	if minutesDueTraffic <= 10 {
+		return fmt.Sprintf("%v\t(%.0fm slower than usual)", aurora.Brown(e.DurationInTraffic), minutesDueTraffic)
+	}
+	return fmt.Sprintf("%v\t(%.0fm slower than usual)", aurora.Red(e.DurationInTraffic), minutesDueTraffic)
 }
