@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -53,12 +54,19 @@ func requestDurations(origin string, destinations []string) (*maps.DistanceMatri
 
 func printDurations(rsp *maps.DistanceMatrixResponse) error {
 	fmt.Println()
-	fmt.Printf("Origin:\n%s\n", rsp.OriginAddresses[0])
-	fmt.Println()
+	origin := rsp.OriginAddresses[0]
+	if origin == "" {
+		return errors.New("origin not found")
+	}
+	fmt.Printf("Origin:\n%s\n\n", origin)
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', tabwriter.TabIndent)
 	fmt.Fprintf(w, "Destination\tDistance\tStatus\tLive Duration\n")
 	for i, dst := range rsp.DestinationAddresses {
+		if dst == "" {
+			fmt.Fprintf(w, "not found\t\t\t\n")
+			continue
+		}
 		e := rsp.Rows[0].Elements[i]
 		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", dst, e.Distance.HumanReadable, e.Status, formatLiveDuration(e))
 	}
