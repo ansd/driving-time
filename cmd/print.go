@@ -75,10 +75,10 @@ func printDurations(rsp *maps.DistanceMatrixResponse) error {
 
 func formatLiveDuration(e *maps.DistanceMatrixElement) string {
 	minutesDueTraffic := e.DurationInTraffic.Minutes() - e.Duration.Minutes()
-	if minutesDueTraffic < 0 {
+	if minutesDueTraffic < -1 {
 		return fmt.Sprintf("%v\t(%.0fm faster than usual)", aurora.Green(e.DurationInTraffic), math.Abs(minutesDueTraffic))
 	}
-	if minutesDueTraffic == 0 {
+	if minutesDueTraffic < 1 {
 		return fmt.Sprintf("%v\t(the usual traffic)", aurora.Green(e.DurationInTraffic))
 	}
 	if minutesDueTraffic <= 10 {
