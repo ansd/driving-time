@@ -9,6 +9,7 @@ import (
 
 var origin string
 var destinations []string
+var apiKey string
 
 func init() {
 	flags := rootCmd.PersistentFlags()
@@ -21,6 +22,12 @@ func init() {
 
 	flags.StringArrayVarP(&destinations, "destination", "d", nil, "driving destination (required)")
 	if err := cobra.MarkFlagRequired(flags, "destination"); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	flags.StringVarP(&apiKey, "api-key", "k", "", "Google Cloud Platform API key (required)")
+	if err := cobra.MarkFlagRequired(flags, "api-key"); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
