@@ -10,6 +10,7 @@ import (
 
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"googlemaps.github.io/maps"
 )
 
@@ -23,7 +24,7 @@ var printCmd = &cobra.Command{
 	Long:  "Print live driving time and distance to stdout",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		rsp, err := requestDurations(origin, destinations)
+		rsp, err := requestDurations()
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -36,15 +37,15 @@ var printCmd = &cobra.Command{
 	},
 }
 
-func requestDurations(origin string, destinations []string) (*maps.DistanceMatrixResponse, error) {
-	client, err := maps.NewClient(maps.WithAPIKey(apiKey))
+func requestDurations() (*maps.DistanceMatrixResponse, error) {
+	client, err := maps.NewClient(maps.WithAPIKey(viper.GetString("api-key")))
 	if err != nil {
 		return nil, err
 	}
 
 	req := maps.DistanceMatrixRequest{
-		Origins:       []string{origin},
-		Destinations:  destinations,
+		Origins:       []string{viper.GetString("origin")},
+		Destinations:  viper.GetStringSlice("destinations"),
 		Mode:          "ModeDriving",
 		DepartureTime: "now",
 	}

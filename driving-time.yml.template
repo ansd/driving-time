@@ -1,0 +1,7 @@
+---
+origin: "SAP,Walldorf"
+destinations:
+- "SAP,Munich"
+- "Alte,Eppelheimer,Str.,Heidelberg"
+- "Robert-Bosch-Str.,Walldorf"
+api-key: "12345"
