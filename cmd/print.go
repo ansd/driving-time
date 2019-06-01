@@ -8,10 +8,11 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/ansd/driving-time/maps"
 	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"googlemaps.github.io/maps"
+	googleMaps "googlemaps.github.io/maps"
 )
 
 func init() {
@@ -24,7 +25,13 @@ var printCmd = &cobra.Command{
 	Long:  "Print live driving time and distance to stdout",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		rsp, err := requestDurations()
+		client, err := googleMaps.NewClient(googleMaps.WithAPIKey(viper.GetString("api-key")))
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		rsp, err := requestDurations(client, viper.GetViper())
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
@@ -37,23 +44,18 @@ var printCmd = &cobra.Command{
 	},
 }
 
-func requestDurations() (*maps.DistanceMatrixResponse, error) {
-	client, err := maps.NewClient(maps.WithAPIKey(viper.GetString("api-key")))
-	if err != nil {
-		return nil, err
-	}
-
-	req := maps.DistanceMatrixRequest{
+func requestDurations(client maps.Client, viper *viper.Viper) (*googleMaps.DistanceMatrixResponse, error) {
+	req := googleMaps.DistanceMatrixRequest{
 		Origins:       []string{viper.GetString("origin")},
 		Destinations:  viper.GetStringSlice("destinations"),
 		Mode:          "ModeDriving",
 		DepartureTime: "now",
 	}
 
-	return client.DistanceMatrix(context.TODO(), &req)
+	return client.DistanceMatrix(context.Background(), &req)
 }
 
-func printDurations(rsp *maps.DistanceMatrixResponse) error {
+func printDurations(rsp *googleMaps.DistanceMatrixResponse) error {
 	fmt.Println()
 	origin := rsp.OriginAddresses[0]
 	if origin == "" {
@@ -74,7 +76,7 @@ func printDurations(rsp *maps.DistanceMatrixResponse) error {
 	return w.Flush()
 }
 
-func formatLiveDuration(e *maps.DistanceMatrixElement) string {
+func formatLiveDuration(e *googleMaps.DistanceMatrixElement) string {
 	minutesDueTraffic := e.DurationInTraffic.Minutes() - e.Duration.Minutes()
 	if minutesDueTraffic < -1 {
 		return fmt.Sprintf("%v\t(%.0fm faster than usual)", aurora.Green(e.DurationInTraffic), math.Abs(minutesDueTraffic))

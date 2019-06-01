@@ -6,8 +6,13 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"path"
+	"runtime"
 
+	"github.com/ansd/driving-time/maps"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	googleMaps "googlemaps.github.io/maps"
 )
 
 func init() {
@@ -18,16 +23,44 @@ var serveCmd = &cobra.Command{
 	Use:   "serve",
 	Short: "Serve HTTP clients",
 	Long:  "Serve HTTP clients",
+
 	Run: func(cmd *cobra.Command, args []string) {
-		startServer()
+		client, err := googleMaps.NewClient(googleMaps.WithAPIKey(viper.GetString("api-key")))
+		if err != nil {
+			panic(err)
+		}
+		server := NewServer(client, viper.GetViper())
+		server.Serve()
 	},
 }
 
-func startServer() {
+type Server struct {
+	client     maps.Client
+	viper      *viper.Viper
+	HttpServer http.Server
+}
+
+func NewServer(client maps.Client, viper *viper.Viper) *Server {
+	return &Server{
+		client: client,
+		viper:  viper,
+	}
+}
+
+var s *Server
+
+func (server *Server) Serve() {
+	s = server
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/info", infoHandler)
+	mux.HandleFunc("/time", timeHandler)
+	s.HttpServer.Handler = mux
+
+	s.HttpServer.Addr = ":8080"
+
 	fmt.Println("Starting server...")
-	http.HandleFunc("/info", infoHandler)
-	http.HandleFunc("/time", timeHandler)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	if err := s.HttpServer.ListenAndServe(); err != http.ErrServerClosed {
 		panic(err)
 	}
 }
@@ -37,10 +70,13 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func timeHandler(w http.ResponseWriter, r *http.Request) {
-	rsp, err := requestDurations()
+	errHint := "Check server logs for more details."
+
+	rsp, err := requestDurations(s.client, s.viper)
 	if err != nil {
-		fmt.Printf("Couldn't request durations: %v\n", err)
-		http.Error(w, fmt.Sprintln("Couldn't request durations. Check server logs for more details."), http.StatusInternalServerError)
+		errMsg := "Couldn't request durations. "
+		fmt.Println(errMsg + err.Error())
+		http.Error(w, errMsg+errHint, http.StatusInternalServerError)
 		return
 	}
 
@@ -53,15 +89,27 @@ func timeHandler(w http.ResponseWriter, r *http.Request) {
 			return float64(a - b)
 		},
 	}
-	parsed, err := template.New("time.gohtml").Funcs(funcMap).ParseFiles("templates/time.gohtml")
+
+	_, sourceFileName, _, ok := runtime.Caller(0)
+	if !ok {
+		errMsg := "Couldn't get source file name"
+		fmt.Println(errMsg)
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		return
+	}
+	templatePath := path.Join(path.Dir(sourceFileName), "../templates/time.gohtml")
+
+	parsed, err := template.New("time.gohtml").Funcs(funcMap).ParseFiles(templatePath)
 	if err != nil {
-		fmt.Printf("Couldn't parse template file: %v\n", err)
-		http.Error(w, fmt.Sprintf("Couldn't parse template file. Check server logs for more details."), http.StatusInternalServerError)
+		errMsg := "Couldn't parse template file"
+		fmt.Println(errMsg + err.Error())
+		http.Error(w, errMsg+errHint, http.StatusInternalServerError)
 		return
 	}
 	if err = parsed.Execute(w, rsp); err != nil {
-		fmt.Printf("Couldn't execute template: %v\n", err)
-		http.Error(w, fmt.Sprintf("Couldn't execute template. Check server logs for more details."), http.StatusInternalServerError)
+		errMsg := "Couldn't execute template"
+		fmt.Println(errMsg + err.Error())
+		http.Error(w, errMsg+errHint, http.StatusInternalServerError)
 		return
 	}
 }

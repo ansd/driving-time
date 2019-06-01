@@ -4,7 +4,7 @@
 
 <h2>Live Traffic Data</h2>
 
-{{$rsp := $}}
+{{- $rsp := $}}
 
 <p>
 <b>Origin</b><br>
@@ -18,30 +18,29 @@
 	<th align="left">Status</th>
 	<th align="left">Live Duration</th>
 </tr>
-
-{{$row := index $rsp.Rows 0}}
-{{range $i, $dst := $rsp.DestinationAddresses}}
-{{$elem := index $row.Elements $i}}
+{{- $row := index $rsp.Rows 0}}
+{{- range $i, $dst := $rsp.DestinationAddresses}}
+{{- $elem := index $row.Elements $i}}
 <tr>
 	<td>{{$dst}}</td>
 	<td>{{$elem.Distance.HumanReadable}}</td>
 	<td>{{$elem.Status}}</td>
 	<td>
-		{{$minutesInTraffic := $elem.DurationInTraffic.Minutes}}
-		{{$minutes := $elem.Duration.Minutes}}
-		{{$minutesDueTraffic := minus $minutesInTraffic $minutes}}
-		{{if float64 -1 | lt $minutesDueTraffic}}
-				<span style="color:Green">{{$elem.DurationInTraffic}}</span> ({{abs $minutesDueTraffic | printf "%.0f"}}m faster than usual)
-		{{else if float64 1 | lt $minutesDueTraffic}}
-				<span style="color:Green">{{$elem.DurationInTraffic}}</span> (the usual traffic)
-		{{else if float64 10 | le $minutesDueTraffic}}
-				<span style="color:Orange">{{$elem.DurationInTraffic}}</span> ({{printf "%.0f" $minutesDueTraffic}}m slower than usual)
-    {{else}}
-				<span style="color:Red">{{$elem.DurationInTraffic}}</span> ({{printf "%.0f" $minutesDueTraffic}}m slower than usual)
-    {{end}}
-</td>
+		{{- $minutesInTraffic := $elem.DurationInTraffic.Minutes}}
+		{{- $minutes := $elem.Duration.Minutes}}
+		{{- $minutesDueTraffic := minus $minutesInTraffic $minutes}}
+		{{- if float64 -1 | lt $minutesDueTraffic}}
+      <span style="color:Green">{{$elem.DurationInTraffic}}</span> ({{abs $minutesDueTraffic | printf "%.0f"}}m faster than usual)
+		{{- else if float64 1 | lt $minutesDueTraffic}}
+      <span style="color:Green">{{$elem.DurationInTraffic}}</span> (the usual traffic)
+		{{- else if float64 10 | le $minutesDueTraffic}}
+      <span style="color:Orange">{{$elem.DurationInTraffic}}</span> ({{printf "%.0f" $minutesDueTraffic}}m slower than usual)
+    {{- else}}
+      <span style="color:Red">{{$elem.DurationInTraffic}}</span> ({{printf "%.0f" $minutesDueTraffic}}m slower than usual)
+    {{- end}}
+	</td>
 </tr>
-{{end}}
+{{- end}}
 </table>
 
 </body>
