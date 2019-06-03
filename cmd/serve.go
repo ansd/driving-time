@@ -37,30 +37,28 @@ var serveCmd = &cobra.Command{
 type Server struct {
 	client     maps.Client
 	viper      *viper.Viper
-	HttpServer http.Server
+	HttpServer *http.Server
 }
 
 func NewServer(client maps.Client, viper *viper.Viper) *Server {
-	return &Server{
-		client: client,
-		viper:  viper,
+	mux := http.NewServeMux()
+	httpServer := &http.Server{
+		Addr:    ":8080",
+		Handler: mux,
 	}
+	server := &Server{
+		client:     client,
+		viper:      viper,
+		HttpServer: httpServer,
+	}
+	mux.HandleFunc("/info", infoHandler)
+	mux.HandleFunc("/time", server.timeHandler)
+	return server
 }
 
-var s *Server
-
 func (server *Server) Serve() {
-	s = server
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/info", infoHandler)
-	mux.HandleFunc("/time", timeHandler)
-	s.HttpServer.Handler = mux
-
-	s.HttpServer.Addr = ":8080"
-
 	fmt.Println("Starting server...")
-	if err := s.HttpServer.ListenAndServe(); err != http.ErrServerClosed {
+	if err := server.HttpServer.ListenAndServe(); err != http.ErrServerClosed {
 		panic(err)
 	}
 }
@@ -69,10 +67,10 @@ func infoHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "up")
 }
 
-func timeHandler(w http.ResponseWriter, r *http.Request) {
+func (server *Server) timeHandler(w http.ResponseWriter, r *http.Request) {
 	errHint := "Check server logs for more details."
 
-	rsp, err := requestDurations(s.client, s.viper)
+	rsp, err := requestDurations(server.client, server.viper)
 	if err != nil {
 		errMsg := "Couldn't request durations. "
 		fmt.Println(errMsg + err.Error())
