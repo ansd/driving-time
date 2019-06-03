@@ -21,12 +21,15 @@ var _ = Describe("Serve", func() {
 		mockCtrl   *gomock.Controller
 		server     *cmd.Server
 		mockClient *mocks.MockClient
+
+		origin       string   = "myOrigin"
+		destinations []string = []string{"dst1", "dst2", "dst3", "dst4"}
 	)
 
 	BeforeEach(func() {
 		viper := viper.New()
-		viper.Set("origin", "myOrigin")
-		viper.Set("destinations", []string{"dst1", "dst2"})
+		viper.Set("origin", origin)
+		viper.Set("destinations", destinations)
 
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockClient = mocks.NewMockClient(mockCtrl)
@@ -59,8 +62,8 @@ var _ = Describe("Serve", func() {
 			duration1h11m, _ := time.ParseDuration("1h11m")
 
 			rsp := &maps.DistanceMatrixResponse{
-				OriginAddresses:      []string{"myOrigin"},
-				DestinationAddresses: []string{"dst1", "dst2", "dst3", "dst4"},
+				OriginAddresses:      []string{origin},
+				DestinationAddresses: destinations,
 				Rows: []maps.DistanceMatrixElementsRow{
 					maps.DistanceMatrixElementsRow{
 						Elements: []*maps.DistanceMatrixElement{
@@ -105,9 +108,16 @@ var _ = Describe("Serve", func() {
 				},
 			}
 
+			expectedReq := &maps.DistanceMatrixRequest{
+				Origins:       []string{origin},
+				Destinations:  destinations,
+				Mode:          "ModeDriving",
+				DepartureTime: "now",
+			}
+
 			mockClient.
 				EXPECT().
-				DistanceMatrix(gomock.Any(), gomock.Any()).
+				DistanceMatrix(gomock.Any(), gomock.Eq(expectedReq)).
 				Return(rsp, nil)
 		})
 
