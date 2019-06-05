@@ -1,1 +1,2 @@
 mockgen -destination=mocks/mock_client.go -package=mocks github.com/ansd/driving-time/maps Client
+mockgen -destination=mocks/mock_clock.go -package=mocks github.com/ansd/driving-time/clock Nower

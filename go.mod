@@ -10,6 +10,7 @@ require (
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
 	github.com/pelletier/go-toml v1.4.0 // indirect
+	github.com/robfig/cron v1.1.0
 	github.com/sergi/go-diff v1.0.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.4

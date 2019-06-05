@@ -4,7 +4,8 @@
 
 <h2>Live Traffic Data</h2>
 
-{{- $rsp := $}}
+{{- $cache := $}}
+{{- $rsp := $cache.Rsp}}
 
 <p>
 <b>Origin</b><br>
@@ -42,6 +43,11 @@
 </tr>
 {{- end}}
 </table>
+
+<p>
+<b>Updated</b><br>
+{{format $cache.LastFetched}}
+</p>
 
 </body>
 </html>
