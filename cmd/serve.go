@@ -72,7 +72,7 @@ func NewServer(client maps.Client, viper *viper.Viper, nower clock.Nower) *Serve
 		},
 		parsedTemplate: parseTemplate(),
 	}
-	mux.HandleFunc("/info", infoHandler)
+	mux.HandleFunc("/health", healthHandler)
 	mux.HandleFunc("/time", server.timeHandler)
 
 	if viper.GetString("cron") != "" {
@@ -81,7 +81,7 @@ func NewServer(client maps.Client, viper *viper.Viper, nower clock.Nower) *Serve
 	return server
 }
 
-func infoHandler(w http.ResponseWriter, r *http.Request) {
+func healthHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%v %v from %v\n", r.Method, r.URL, r.RemoteAddr)
 	io.WriteString(w, "up")
 }

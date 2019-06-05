@@ -54,8 +54,8 @@ var _ = Describe("Serve", func() {
 		mockCtrl.Finish()
 	})
 
-	It("responds to /info", func() {
-		rsp, err := http.Get(addr + "/info")
+	It("responds to /health", func() {
+		rsp, err := http.Get(addr + "/health")
 		Expect(err).NotTo(HaveOccurred())
 		Expect(rsp.StatusCode).To(Equal(http.StatusOK))
 		defer rsp.Body.Close()
