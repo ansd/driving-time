@@ -1,6 +1,9 @@
 ---
 origin: "SAP,Walldorf"
 destinations:
-- "SAP,Munich"
-- "Alte,Eppelheimer,Str.,Heidelberg"
+- "Schwetzingerstadt, Mannheim"
+- "SAP, Munich"
+- "Karlsruhe"
+- "Car Wash Center, Walldorf"
 api-key: "12345"
+cron: "0 0,15,30,45 16-19 ? * MON-FRI"
