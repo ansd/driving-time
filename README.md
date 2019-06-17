@@ -20,7 +20,7 @@ $ driving-time --config driving-time.yml serve
 ```
 ![serve.png](docs/serve.png)
 
-You can optionally provide a `cron` schedule in the config file. This enables the server to cache the last response from Google Maps Distance Matrix API and return the cached response to the client. You can use [synoptico](https://github.com/friegger/synoptico) to poll the server every [timer](https://github.com/friegger/synoptico/blob/2b1c3daf1c930681ff89d84394f5ce4760743c99/docs/examples/sample.json#L5) seconds. The cron schedule invalidates the cached response forcing the server to request the Google Maps Distance Matrix API.
+You can optionally provide a `cron` schedule in the config file. This enables the server to cache the last response from Google Maps Distance Matrix API and return the cached response to the client. You can use [Synoptico](https://github.com/friegger/synoptico) to poll the server every [timer](https://github.com/friegger/synoptico/blob/2b1c3daf1c930681ff89d84394f5ce4760743c99/docs/examples/sample.json#L5) seconds. In Synoptico, make sure there are at least [two URLs](https://github.com/friegger/synoptico/blob/2b1c3daf1c930681ff89d84394f5ce4760743c99/docs/examples/sample.json#L3) configured to have Synoptico respect the `timer` field (e.g. `"urls": ["http://localhost:8080/time", "http://localhost:8080/time?somefake=param"],`). The cron schedule invalidates the cached response forcing the server to request the Google Maps Distance Matrix API.
 
-Alternatively, print live traffic data on the command line:
+Print live traffic data on the command line:
 ![print.png](docs/print.png)
