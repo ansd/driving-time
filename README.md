@@ -2,12 +2,13 @@
 
 `driving-time` is a CLI (and server) displaying driving time based on live traffic data.
 
+## Installation
+Options:
+1. Download the binary in https://github.com/ansd/driving-time/releases
+1. Use Homebrew: see https://github.com/ansd/homebrew-tap
+1. Build from source: `go get github.com/ansd/driving-time`
+
 ## Usage
-
-```
-go get github.com/ansd/driving-time
-```
-
 Create a config file (e.g. `driving-time.yml`) like the one in [driving-time.yml.template](driving-time.yml.template).
 
 For `api-key`, you need a Google Cloud Platform API key (see [here](https://developers.google.com/maps/documentation/distance-matrix/get-api-key) how to get one)
