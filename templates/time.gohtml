@@ -1,3 +1,4 @@
+{{define "content" -}}
 <!DOCTYPE html>
 <html>
 <body style="background-color:#F4F6F7;">
@@ -48,6 +49,13 @@
 <b>Updated</b><br>
 {{format $cache.LastFetched}}
 </p>
+{{end}}
+
+{{- define "reload"}}
+<script>
+    setInterval(function(){location.reload()},{{.}});
+</script>
 
 </body>
 </html>
+{{end}}

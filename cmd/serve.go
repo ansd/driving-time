@@ -20,8 +20,12 @@ import (
 
 func init() {
 	flags := serveCmd.PersistentFlags()
+
 	flags.String("cron", "", "cron expression (see https://godoc.org/github.com/robfig/cron#hdr-CRON_Expression_Format)")
 	viper.BindPFlag("cron", flags.Lookup("cron"))
+
+	flags.IntP("client-reload-seconds", "r", 600, "the number of seconds the client of the /time endpoint periodically reloads the page")
+	viper.BindPFlag("client-reload-seconds", flags.Lookup("client-reload-seconds"))
 
 	rootCmd.AddCommand(serveCmd)
 }
@@ -110,8 +114,16 @@ func (server *Server) timeHandler(w http.ResponseWriter, r *http.Request) {
 		cache.valid = true
 	}
 
-	if err := server.parsedTemplate.Execute(w, server.cache); err != nil {
-		errMsg := "Couldn't execute template. "
+	if err := server.parsedTemplate.ExecuteTemplate(w, "content", server.cache); err != nil {
+		errMsg := "Couldn't execute template 'content'. "
+		log.Println(errMsg + err.Error())
+		http.Error(w, errMsg+errHint, http.StatusInternalServerError)
+		return
+	}
+
+	reloadMillis := viper.GetInt("client-reload-seconds") * 1000
+	if err := server.parsedTemplate.ExecuteTemplate(w, "reload", reloadMillis); err != nil {
+		errMsg := "Couldn't execute template 'reload'. "
 		log.Println(errMsg + err.Error())
 		http.Error(w, errMsg+errHint, http.StatusInternalServerError)
 		return

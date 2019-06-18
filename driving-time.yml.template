@@ -1,9 +1,29 @@
 ---
-origin: "SAP,Walldorf"
+# required
+# The driving origin
+# This can be an address or point of interest or anything which can be resolved by Google Maps.
+origin: "SAP, Walldorf"
+
+# required
+# The driving destinations
+# These can be addresses or points of interest or anything which can be resolved by Google Maps.
 destinations:
 - "Schwetzingerstadt, Mannheim"
 - "SAP, Munich"
 - "Karlsruhe"
 - "Car Wash Center, Walldorf"
+
+# required
+# The Google Cloud Platform API key (see https://developers.google.com/maps/documentation/distance-matrix/get-api-key how to get one)
 api-key: "12345"
+
+# optional
+# If set, this server caches the last response from the Google Maps Distance Matrix API.
+# The cache gets invalidated according to the cron schedule which forces this server to request the Google Maps Distance Matrix API.
+# This feature can be helpful to limit the number of requests done to the Google Maps Distance Matrix API independent of client-reload-seconds.
 cron: "0 0,15,30,45 16-19 ? * MON-FRI"
+
+# optional
+# The number of seconds the client periodically reloads the page (i.e. sending a request to this server's /time endpoint).
+# default: 600
+client-reload-seconds: 600
