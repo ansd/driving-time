@@ -18,6 +18,11 @@ destinations:
 api-key: "12345"
 
 # optional
+# The port this server listens on
+# default: 8080
+port: 8080
+
+# optional
 # If set, this server caches the last response from the Google Maps Distance Matrix API.
 # The cache gets invalidated according to the cron schedule which forces this server to request the Google Maps Distance Matrix API.
 # This feature can be helpful to limit the number of requests done to the Google Maps Distance Matrix API independent of client-reload-seconds.

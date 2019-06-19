@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -20,6 +21,9 @@ import (
 
 func init() {
 	flags := serveCmd.PersistentFlags()
+
+	flags.IntP("port", "p", 8080, "port this server listens on")
+	viper.BindPFlag("port", flags.Lookup("port"))
 
 	flags.String("cron", "", "cron expression (see https://godoc.org/github.com/robfig/cron#hdr-CRON_Expression_Format)")
 	viper.BindPFlag("cron", flags.Lookup("cron"))
@@ -64,7 +68,7 @@ type cache struct {
 func NewServer(client maps.Client, viper *viper.Viper, nower clock.Nower) *Server {
 	mux := http.NewServeMux()
 	httpServer := &http.Server{
-		Addr:    ":8080",
+		Addr:   fmt.Sprintf("localhost:%d", viper.GetInt("port")),
 		Handler: mux,
 	}
 	server := &Server{
@@ -137,7 +141,7 @@ func (server *Server) Serve() {
 		c.Start()
 	}
 
-	log.Println("Starting server")
+	log.Println("Server listening on " + server.HttpServer.Addr)
 	if err := server.HttpServer.ListenAndServe(); err != http.ErrServerClosed {
 		panic(err)
 	}
