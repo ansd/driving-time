@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -eu
+
+if [[ "$#" -ne 1 ]]; then
+ echo "usage: $0 <version>"
+ exit 1
+fi
+
+readonly version=$1
+
+cd "$(dirname "$0")"/..
+
+GPG_TTY=$(tty)
+export GPG_TTY
+
+git tag --sign v"$version"
+git push origin v"$version"
+
+env GOOS=darwin GOARCH=amd64 go build -o driving-time-"$version"-darwin-amd64
+env GOOS=linux GOARCH=amd64 go build -o driving-time-"$version"-linux-amd64
+env GOOS=windows GOARCH=amd64 go build -o driving-time-"$version"-windows-amd64.exe
+
+description=$(mktemp /tmp/description.XXXX)
+echo -e "v$version\\n" > "$description"
+echo -e "Assets:\\nsha256\\n\`\`\`" >> "$description"
+shasum -a 256 driving-time-"$version"-* >> "$description"
+echo '```' >> "$description"
+
+hub release create \
+  --browse \
+  --attach driving-time-"$version"-darwin-amd64 \
+  --attach driving-time-"$version"-linux-amd64 \
+  --attach driving-time-"$version"-windows-amd64.exe \
+  --file "$description" \
+  v"$version"
+
+rm "$description"
+rm driving-time-"$version"-*
