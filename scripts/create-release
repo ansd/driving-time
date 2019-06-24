@@ -16,6 +16,14 @@ fi
 
 cd "$(dirname "$0")"/..
 
+# bump version which is output by 'driving-time --version'
+sed -E -e "s/(Version:[[:space:]]+)\"[0-9]+\.[0-9]+\.[0-9]+\",/\1\"$version\",/" \
+  -i '' cmd/root.go
+
+git add cmd/root.go
+git commit -m "Bump driving-time to v$version"
+git push
+
 GPG_TTY=$(tty)
 export GPG_TTY
 
