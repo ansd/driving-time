@@ -22,9 +22,14 @@ export GPG_TTY
 git tag --sign v"$version"
 git push origin v"$version"
 
+# bundle HTML template files into the Go binary
+packr2
+
 env GOOS=darwin GOARCH=amd64 go build -o driving-time-"$version"-darwin-amd64
 env GOOS=linux GOARCH=amd64 go build -o driving-time-"$version"-linux-amd64
 env GOOS=windows GOARCH=amd64 go build -o driving-time-"$version"-windows-amd64.exe
+
+packr2 clean
 
 description=$(mktemp /tmp/description.XXXX)
 echo -e "v$version\\n" > "$description"

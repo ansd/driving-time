@@ -7,12 +7,11 @@ import (
 	"log"
 	"math"
 	"net/http"
-	"path"
-	"runtime"
 	"time"
 
 	"github.com/ansd/driving-time/clock"
 	"github.com/ansd/driving-time/maps"
+	packr "github.com/gobuffalo/packr/v2"
 	"github.com/robfig/cron"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -162,12 +161,14 @@ func parseTemplate() *template.Template {
 			return t.Format(time.UnixDate)
 		},
 	}
-	_, sourceFileName, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("Couldn't get source file name")
+
+	box := packr.New("template box", "../templates")
+	htmlTemplate, err := box.FindString("time.gohtml")
+	if err != nil {
+		panic(err)
 	}
-	templatePath := path.Join(path.Dir(sourceFileName), "../templates/time.gohtml")
-	parsed, err := template.New("time.gohtml").Funcs(funcMap).ParseFiles(templatePath)
+
+	parsed, err := template.New("time template").Funcs(funcMap).Parse(htmlTemplate)
 	if err != nil {
 		panic(err)
 	}
