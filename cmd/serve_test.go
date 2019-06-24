@@ -49,7 +49,7 @@ var _ = Describe("Serve", func() {
 	})
 
 	AfterEach(func() {
-		if err := server.HttpServer.Shutdown(context.Background()); err != nil {
+		if err := server.HTTPServer.Shutdown(context.Background()); err != nil {
 			log.Printf("Couldn't shutdown server: %v\n", err)
 		}
 		mockCtrl.Finish()
@@ -79,9 +79,9 @@ var _ = Describe("Serve", func() {
 				OriginAddresses:      []string{origin},
 				DestinationAddresses: destinations,
 				Rows: []maps.DistanceMatrixElementsRow{
-					maps.DistanceMatrixElementsRow{
+					{
 						Elements: []*maps.DistanceMatrixElement{
-							&maps.DistanceMatrixElement{
+							{
 								Status:            "OK",
 								Duration:          duration1h,
 								DurationInTraffic: duration58m,
@@ -90,7 +90,7 @@ var _ = Describe("Serve", func() {
 									Meters:        99000,
 								},
 							},
-							&maps.DistanceMatrixElement{
+							{
 								Status:            "OK",
 								Duration:          duration1h,
 								DurationInTraffic: duration1h,
@@ -99,7 +99,7 @@ var _ = Describe("Serve", func() {
 									Meters:        99000,
 								},
 							},
-							&maps.DistanceMatrixElement{
+							{
 								Status:            "OK",
 								Duration:          duration1h,
 								DurationInTraffic: duration1h1m,
@@ -108,7 +108,7 @@ var _ = Describe("Serve", func() {
 									Meters:        99000,
 								},
 							},
-							&maps.DistanceMatrixElement{
+							{
 								Status:            "OK",
 								Duration:          duration1h,
 								DurationInTraffic: duration1h11m,

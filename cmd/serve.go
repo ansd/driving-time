@@ -28,7 +28,8 @@ func init() {
 	flags.String("cron", "", "cron expression (see https://godoc.org/github.com/robfig/cron#hdr-CRON_Expression_Format)")
 	viper.BindPFlag("cron", flags.Lookup("cron"))
 
-	flags.IntP("client-reload-seconds", "r", 600, "the number of seconds the client of the /time endpoint periodically reloads the page")
+	flags.IntP("client-reload-seconds", "r", 600,
+		"the number of seconds the client of the /time endpoint periodically reloads the page")
 	viper.BindPFlag("client-reload-seconds", flags.Lookup("client-reload-seconds"))
 
 	rootCmd.AddCommand(serveCmd)
@@ -52,7 +53,7 @@ var serveCmd = &cobra.Command{
 type Server struct {
 	client         maps.Client
 	viper          *viper.Viper
-	HttpServer     *http.Server
+	HTTPServer     *http.Server
 	cache          *cache
 	parsedTemplate *template.Template
 }
@@ -68,13 +69,13 @@ type cache struct {
 func NewServer(client maps.Client, viper *viper.Viper, nower clock.Nower) *Server {
 	mux := http.NewServeMux()
 	httpServer := &http.Server{
-		Addr:   fmt.Sprintf("localhost:%d", viper.GetInt("port")),
+		Addr:    fmt.Sprintf("localhost:%d", viper.GetInt("port")),
 		Handler: mux,
 	}
 	server := &Server{
 		client:     client,
 		viper:      viper,
-		HttpServer: httpServer,
+		HTTPServer: httpServer,
 		cache: &cache{
 			nower: nower,
 		},
@@ -102,9 +103,7 @@ func (server *Server) timeHandler(w http.ResponseWriter, r *http.Request) {
 	var rsp *googleMaps.DistanceMatrixResponse
 	cache := server.cache
 
-	if cache.enabled && cache.valid {
-		rsp = cache.Rsp
-	} else {
+	if !cache.enabled || !cache.valid {
 		var err error
 		rsp, err = requestDurations(server.client, server.viper)
 		if err != nil {
@@ -137,12 +136,15 @@ func (server *Server) timeHandler(w http.ResponseWriter, r *http.Request) {
 func (server *Server) Serve() {
 	if server.cache.enabled {
 		c := cron.New()
-		c.AddFunc(server.viper.GetString("cron"), server.cache.invalidate)
+		err := c.AddFunc(server.viper.GetString("cron"), server.cache.invalidate)
+		if err != nil {
+			panic(err)
+		}
 		c.Start()
 	}
 
-	log.Println("Server listening on " + server.HttpServer.Addr)
-	if err := server.HttpServer.ListenAndServe(); err != http.ErrServerClosed {
+	log.Println("Server listening on " + server.HTTPServer.Addr)
+	if err := server.HTTPServer.ListenAndServe(); err != http.ErrServerClosed {
 		panic(err)
 	}
 }
@@ -154,7 +156,7 @@ func parseTemplate() *template.Template {
 			return float64(a)
 		},
 		"minus": func(a, b float64) float64 {
-			return float64(a - b)
+			return a - b
 		},
 		"format": func(t time.Time) string {
 			return t.Format(time.UnixDate)
