@@ -33,7 +33,7 @@ var _ = Describe("Serve", func() {
 		config = viper.New()
 		config.Set("origin", origin)
 		config.Set("destinations", destinations)
-		config.Set("port", 8080)
+		config.Set("address", "localhost:8080")
 
 		mockCtrl = gomock.NewController(GinkgoT())
 		mockClient = mocks.NewMockClient(mockCtrl)
