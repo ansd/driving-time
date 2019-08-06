@@ -18,7 +18,7 @@ var rootCmd = &cobra.Command{
   by querying Google Maps Distance Matrix API`,
 	Args:             cobra.OnlyValidArgs,
 	PersistentPreRun: initConfig,
-	Version:          "0.3.0",
+	Version:          "0.4.0",
 }
 
 func Execute() {
